@@ -26,6 +26,7 @@ export default function HomePage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const onAnalyzeTapRef = useRef<(() => void) | null>(null);
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [isCameraError, setIsCameraError] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
@@ -54,11 +55,14 @@ export default function HomePage() {
     }
   }, [isCameraReady]);
 
-  // Set capture callback for auto-scan
+  // Keep ref to latest onAnalyzeTap to avoid stale closure in auto-scan
+  useEffect(() => { onAnalyzeTapRef.current = onAnalyzeTap; }, [onAnalyzeTap]);
+
+  // Register capture callback once; always calls latest onAnalyzeTap via ref
   useEffect(() => {
-    setCaptureCallback(onAnalyzeTap);
+    setCaptureCallback(() => onAnalyzeTapRef.current?.());
     return () => setCaptureCallback(null);
-  }, [isCameraReady]);
+  }, [setCaptureCallback]);
 
   // Handle auto-scan setting change
   useEffect(() => {

@@ -7,10 +7,63 @@
     <meta name="theme-color" content="#0D0D0D" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="description" content="EYES - AI-Powered Vision Assistance" />
+
+    <!-- Primary SEO -->
     <title>EYES - AI-Powered Vision Assistance</title>
+    <meta name="description" content="EYES uses on-device AI (YOLOv8 + depth estimation) to detect objects, estimate distances, and read text aloud — designed as an accessibility tool for the visually impaired." />
+    <meta name="keywords" content="vision assistance, AI accessibility, object detection, visually impaired, YOLOv8, depth estimation, OCR, blind assistance" />
+    <meta name="author" content="EYES Team" />
+    <link rel="canonical" href="https://eyes-web.netlify.app/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://eyes-web.netlify.app/" />
+    <meta property="og:title" content="EYES - AI-Powered Vision Assistance" />
+    <meta property="og:description" content="Real-time object detection, distance estimation, and text-to-speech guidance for the visually impaired — powered by YOLOv8 and Zero-DCE." />
+    <meta property="og:image" content="https://eyes-web.netlify.app/images/front.png" />
+    <meta property="og:image:alt" content="EYES app showing object detection on camera feed" />
+    <meta property="og:site_name" content="EYES" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://eyes-web.netlify.app/" />
+    <meta name="twitter:title" content="EYES - AI-Powered Vision Assistance" />
+    <meta name="twitter:description" content="Real-time AI object detection and voice guidance for the visually impaired." />
+    <meta name="twitter:image" content="https://eyes-web.netlify.app/images/front.png" />
+
+    <!-- PWA -->
     <link rel="apple-touch-icon" href="/images/apk-icon.png" />
     <link rel="manifest" href="/manifest.json" />
+
+    <!-- Performance: preconnect to backend -->
+    <link rel="preconnect" href="https://web-production-1f25d.up.railway.app" />
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "EYES",
+      "operatingSystem": "Web, Android, iOS",
+      "applicationCategory": "AccessibilityApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "AI-powered vision assistance app using YOLOv8 object detection, depth estimation, and Zero-DCE low-light enhancement to help visually impaired users navigate their environment.",
+      "url": "https://eyes-web.netlify.app/",
+      "image": "https://eyes-web.netlify.app/images/front.png",
+      "featureList": [
+        "Real-time object detection via YOLOv8",
+        "Distance estimation",
+        "Low-light image enhancement",
+        "Text-to-speech guidance",
+        "Filipino and English language support"
+      ]
+    }
+    </script>
   </head>
   <body class="overscroll-none">
     <div id="root"></div>

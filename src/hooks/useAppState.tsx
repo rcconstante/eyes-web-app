@@ -37,8 +37,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const autoScanRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const captureCallbackRef = useRef<(() => void) | null>(null);
   const settingsRef = useRef(settings);
+  const statusRef = useRef<AppStatus>('ready');
 
   useEffect(() => { settingsRef.current = settings; }, [settings]);
+  useEffect(() => { statusRef.current = status; }, [status]);
 
   useEffect(() => {
     ttsService.init();
@@ -71,7 +73,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   };
 
   const analyzeImage = useCallback(async (blob: Blob) => {
-    if (status === 'processing') return;
+    if (statusRef.current === 'processing') return;
     setStatus('processing');
     setCurrentResult(null);
     setErrorMessage(null);
@@ -124,7 +126,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         ttsService.speak(msg, s.language);
       }
     }
-  }, [status]);
+  }, []);
 
   const clearError = useCallback(() => {
     setErrorMessage(null);

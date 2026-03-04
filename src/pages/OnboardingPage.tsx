@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSettings } from '../hooks/useSettings';
 import { ttsService } from '../services/tts';
@@ -20,7 +20,7 @@ const pages: OnboardingPage[] = [
   { imagePath: '/images/No_images.png', titleKey: 'onboarding_privacy_title', subtitleKey: 'onboarding_privacy_subtitle', ttsKey: 'onboarding_privacy_tts', isLast: true },
 ];
 
-export default function OnboardingPage_() {
+export default function OnboardingPage() {
   const navigate = useNavigate();
   const { settings, updateSettings, isDark } = useSettings();
   const lang = settings.language;
@@ -47,7 +47,7 @@ export default function OnboardingPage_() {
   }
 
   // Speak first page on mount
-  useState(() => { speakPage(0); });
+  useEffect(() => { speakPage(0); }, []);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: colors.background }}>
