@@ -3,7 +3,7 @@ export const AppConstants = {
   appTagline: 'AI-Powered Vision Assistance',
   appVersion: '1.0.0',
 
-  baseUrl: 'https://web-production-1f25d.up.railway.app',
+  baseUrl: 'https://eyes-flutter-backend-production.up.railway.app',
   analyzeEndpoint: '/api/analyze',
   apiTimeoutMs: 10000,
 
