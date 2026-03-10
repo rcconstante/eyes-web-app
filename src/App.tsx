@@ -13,7 +13,7 @@ function App() {
     <BrowserRouter>
       <SettingsProvider>
         <AppStateProvider>
-          <div className="max-w-md mx-auto h-screen relative overflow-hidden bg-black">
+          <div className="max-w-md mx-auto min-h-screen bg-black">
             <Routes>
               <Route path="/" element={<SplashPage />} />
               <Route path="/onboarding" element={<OnboardingPage />} />
