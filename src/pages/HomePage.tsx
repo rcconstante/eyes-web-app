@@ -222,7 +222,7 @@ export default function HomePage() {
       <div
         className="absolute bottom-0 left-0 right-0 z-20 pb-9"
         style={{
-          background: `linear-gradient(to bottom, transparent 0%, rgba(13,13,13,0.8) 40%, #0D0D0D 0%)`,
+          background: `linear-gradient(to bottom, transparent 0%, rgba(13,13,13,0.8) 20%, #0D0D0D 100%)`,
           height: 220,
         }}
       >
