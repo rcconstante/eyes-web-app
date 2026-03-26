@@ -40,7 +40,7 @@ export function parseResult(json: any): ResultModel {
   };
 }
 
-export function toSpokenSentence(r: ResultModel): string {
+export function toSpokenSentence(r: ResultModel, _lang?: string): string {
   if (r.currencyMode && r.currency) {
     return `Currency detected. ${r.currency}.`;
   }

@@ -1,73 +1,64 @@
+import { elevenLabsTtsService } from './elevenLabsTts';
+import { voiceRecognitionService } from './voiceRecognition';
+
+function webSpeechFallback(text: string, lang: string): Promise<void> {
+  return new Promise((resolve) => {
+    if (!('speechSynthesis' in window)) { resolve(); return; }
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = lang === 'fil' ? 'fil-PH' : 'en-US';
+    utter.onend = () => resolve();
+    utter.onerror = () => resolve();
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utter);
+  });
+}
+
 export class TtsService {
-  private synth: SpeechSynthesis | null = null;
-  private defaultRate = 0.9; // Web Speech API rate (0.1-10, default 1)
+  private defaultRate = 0.9;
+  private currentLang = 'en';
 
   init() {
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-      this.synth = window.speechSynthesis;
-    }
+    // ElevenLabs needs no initialization
   }
 
   setSpeechRate(flutterRate: number) {
-    // Flutter rate 0.25-1.0 maps to Web Speech API ~0.5-1.5
-    this.defaultRate = 0.5 + flutterRate * 1.0;
+    // Map 0.25–1.0 to ElevenLabs speed ~0.75–1.25
+    this.defaultRate = 0.75 + flutterRate * 0.5;
   }
 
-  setLanguage(_lang: string) {
-    // Language is set per utterance
+  setLanguage(lang: string) {
+    this.currentLang = lang;
   }
 
-  speak(text: string, lang: string = 'en-US'): Promise<void> {
-    return new Promise((resolve) => {
-      if (!this.synth) { resolve(); return; }
-      this.synth.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang === 'fil' ? 'fil-PH' : 'en-US';
-      utterance.rate = this.defaultRate;
-      utterance.volume = 1.0;
-      utterance.pitch = 1.0;
-      utterance.onend = () => resolve();
-      utterance.onerror = () => resolve();
-      this.synth.speak(utterance);
-    });
+  async speak(text: string, lang: string = 'en'): Promise<void> {
+    const activeLang = lang || this.currentLang;
+    voiceRecognitionService.pauseForTts();
+    try {
+      await elevenLabsTtsService.speak(text, this.defaultRate);
+    } catch (err) {
+      console.warn('[TTS] ElevenLabs unavailable, falling back to Web Speech API:', err);
+      await webSpeechFallback(text, activeLang);
+    } finally {
+      voiceRecognitionService.resumeAfterTts();
+    }
   }
 
-  speakUrgent(text: string, lang: string = 'en-US'): Promise<void> {
-    return new Promise((resolve) => {
-      if (!this.synth) { resolve(); return; }
-      this.synth.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang === 'fil' ? 'fil-PH' : 'en-US';
-      utterance.rate = Math.min(this.defaultRate + 0.3, 2.0);
-      utterance.pitch = 1.2;
-      utterance.volume = 1.0;
-      utterance.onend = () => resolve();
-      utterance.onerror = () => resolve();
-      this.synth.speak(utterance);
-    });
+  async speakUrgent(text: string, lang: string = 'en'): Promise<void> {
+    return this.speak(text, lang);
   }
 
-  speakCalm(text: string, lang: string = 'en-US'): Promise<void> {
-    return new Promise((resolve) => {
-      if (!this.synth) { resolve(); return; }
-      this.synth.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang === 'fil' ? 'fil-PH' : 'en-US';
-      utterance.rate = this.defaultRate;
-      utterance.pitch = 0.95;
-      utterance.volume = 1.0;
-      utterance.onend = () => resolve();
-      utterance.onerror = () => resolve();
-      this.synth.speak(utterance);
-    });
+  async speakCalm(text: string, lang: string = 'en'): Promise<void> {
+    return this.speak(text, lang);
   }
 
   stop() {
-    this.synth?.cancel();
+    elevenLabsTtsService.stop();
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    voiceRecognitionService.resumeAfterTts();
   }
 
   dispose() {
-    this.synth?.cancel();
+    elevenLabsTtsService.dispose();
   }
 }
 

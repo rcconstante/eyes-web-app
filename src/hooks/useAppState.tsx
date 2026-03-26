@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react';
 import { ResultModel, toSpokenSentence } from '../models/result';
+import { t } from '../config/localizations';
 import { apiService } from '../services/api';
 import { ttsService } from '../services/tts';
 import { HapticService } from '../services/haptic';
@@ -80,7 +81,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
     const s = settingsRef.current;
     if (s.voiceEnabled) {
-      ttsService.speak('Analyzing your surroundings', s.language);
+      ttsService.speak(t('analyzing', s.language), s.language);
     }
 
     try {
@@ -105,7 +106,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (s.voiceEnabled && (hasDetection || hasCurrency)) {
-        const sentence = toSpokenSentence(result);
+        const sentence = toSpokenSentence(result, s.language);
         if (result.isCritical) {
           ttsService.speakUrgent(sentence, s.language);
         } else {
@@ -115,15 +116,19 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     } catch (e: any) {
       const msg = e.message || 'Something went wrong';
       setErrorMessage(msg);
+      let spokenError: string;
       if (msg.includes('timed out')) {
         setStatus('error');
+        spokenError = t('error_timeout', s.language);
       } else if (msg.includes('internet') || msg.includes('connection')) {
         setStatus('noConnection');
+        spokenError = t('error_no_internet', s.language);
       } else {
         setStatus('error');
+        spokenError = t('error_generic', s.language);
       }
       if (s.voiceEnabled) {
-        ttsService.speak(msg, s.language);
+        ttsService.speak(spokenError, s.language);
       }
     }
   }, []);

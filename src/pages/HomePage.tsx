@@ -4,6 +4,7 @@ import { useSettings } from '../hooks/useSettings';
 import { useAppState } from '../hooks/useAppState';
 import { HapticService } from '../services/haptic';
 import { ttsService } from '../services/tts';
+import { voiceRecognitionService } from '../services/voiceRecognition';
 import { t } from '../config/localizations';
 import { theme } from '../config/theme';
 import { shortSummary } from '../models/result';
@@ -32,6 +33,8 @@ export default function HomePage() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [imageSize, setImageSize] = useState<{ w: number; h: number } | null>(null);
   const [showError, setShowError] = useState<string | null>(null);
+  const [isVoiceActive, setIsVoiceActive] = useState(false);
+  const [isSpeakingIntro, setIsSpeakingIntro] = useState(false);
 
   const isScanPaused = capturedImage !== null;
 
@@ -61,7 +64,10 @@ export default function HomePage() {
     const canvas = canvasRef.current;
     if (!video || !canvas || !isCameraReady) {
       if (settings.voiceEnabled) {
-        ttsService.speak('Camera is not ready. Please wait.', settings.language);
+        ttsService.speak(
+          settings.language === 'fil' ? 'Hindi pa handa ang camera. Maghintay lang.' : 'Camera is not ready. Please wait.',
+          settings.language,
+        );
       }
       return;
     }
@@ -91,6 +97,34 @@ export default function HomePage() {
       }
     };
   }, []);
+
+  // Initialize voice recognition
+  useEffect(() => {
+    const handleVoiceCommand = (command: 'capture' | 'intro') => {
+      if (command === 'capture') {
+        onAnalyzeTapRef.current?.();
+      } else if (command === 'intro') {
+        setIsSpeakingIntro(true);
+        const introText = t('intro_response', settings.language);
+        ttsService.speak(introText, settings.language).then(() => {
+          setIsSpeakingIntro(false);
+        });
+      }
+    };
+
+    if (voiceRecognitionService.isSupported) {
+      const initialized = voiceRecognitionService.init(handleVoiceCommand, settings.language);
+      if (initialized) {
+        voiceRecognitionService.start();
+        setIsVoiceActive(true);
+      }
+    }
+
+    return () => {
+      voiceRecognitionService.dispose();
+      setIsVoiceActive(false);
+    };
+  }, [settings.language]);
 
   // Announce camera ready
   useEffect(() => {
@@ -217,6 +251,24 @@ export default function HomePage() {
         onSettingsTap={() => navigate('/settings')}
       />
 
+      {/* Voice listening indicator */}
+      {isVoiceActive && (
+        <div className="absolute top-16 right-4 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+          style={{ backgroundColor: 'rgba(26,26,26,0.8)' }}
+        >
+          <div className="relative flex items-center justify-center w-4 h-4">
+            <div className="absolute w-4 h-4 rounded-full animate-ping opacity-40" style={{ backgroundColor: theme.accent }} />
+            <svg className="w-3.5 h-3.5 relative z-10" style={{ color: theme.accent }} fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5z" />
+              <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+            </svg>
+          </div>
+          <span className="text-xs font-medium" style={{ color: theme.accent }}>
+            {t('voice_listening', settings.language)}
+          </span>
+        </div>
+      )}
+
       {/* Connection banner */}
       <div className="absolute top-16 left-0 right-0 z-30">
         <ConnectionBanner
@@ -266,6 +318,38 @@ export default function HomePage() {
 
       {/* Processing overlay */}
       {status === 'processing' && <ProcessingOverlay />}
+
+      {/* Intro speaking overlay */}
+      {isSpeakingIntro && (
+        <div className="absolute inset-0 z-[45] flex items-center justify-center bg-black/60"
+          onClick={() => { ttsService.stop(); setIsSpeakingIntro(false); }}
+        >
+          <div className="mx-8 p-6 rounded-3xl max-w-sm w-full text-center"
+            style={{ backgroundColor: 'rgba(26,26,26,0.95)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: `${theme.accent}26` }}>
+                <svg className="w-8 h-8 animate-pulse" style={{ color: theme.accent }} fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                  <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                </svg>
+              </div>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">EYES</h3>
+            <p className="text-sm" style={{ color: '#B0BEC5' }}>
+              {t('intro_response', settings.language)}
+            </p>
+            <button
+              onClick={() => { ttsService.stop(); setIsSpeakingIntro(false); }}
+              className="mt-4 px-6 py-2 rounded-2xl text-sm font-semibold text-white"
+              style={{ backgroundColor: theme.accent }}
+            >
+              {t('continue_scanning', settings.language)}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Result sheet */}
       {currentResult && status !== 'processing' && (
