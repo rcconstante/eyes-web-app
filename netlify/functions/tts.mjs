@@ -14,9 +14,7 @@ export default async function handler(req) {
   }
 
   const apiKey = process.env.VITE_ELEVENLABS_API_KEY;
-  // Aria (aXzcMSAGMVFWPdS58NFSS) ΓÇö free pre-made voice, supports eleven_multilingual_v2
-  // Rachel (21m00Tcm4TlvDq8ikWAM) is the original free default
-  const defaultVoiceId = process.env.VITE_ELEVENLABS_VOICE_ID || '21m00Tcm4TlvDq8ikWAM';
+  const defaultVoiceId = process.env.VITE_ELEVENLABS_VOICE_ID || '4RLeKvASM0Zt73Htf5GF';
 
   if (!apiKey) {
     return new Response('TTS not configured', { status: 503 });
